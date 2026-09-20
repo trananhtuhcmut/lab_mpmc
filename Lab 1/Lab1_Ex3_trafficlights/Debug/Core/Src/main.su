@@ -1,0 +1,6 @@
+main.c:13:6:setLight_NS	16	static
+main.c:22:6:setLight_EW	16	static
+main.c:32:5:main	8	static
+main.c:66:6:SystemClock_Config	72	static
+main.c:102:13:MX_GPIO_Init	32	static
+main.c:140:6:Error_Handler	4	static,ignoring_inline_asm
