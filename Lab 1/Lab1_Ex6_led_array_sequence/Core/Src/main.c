@@ -38,43 +38,43 @@ int main(void)
   SystemClock_Config();
   MX_GPIO_Init();
 
-  while (1){
-	  clearAllClock();
-	  setNumberOnClock(hour);          //Hour
-	  setNumberOnClock(minute / 5);    // Minute
-	  setNumberOnClock(second / 5);    //Second
-	  HAL_Delay(1000);
+//  while (1){
+//	  clearAllClock();
+//	  setNumberOnClock(hour);          //Hour
+//	  setNumberOnClock(minute / 5);    // Minute
+//	  setNumberOnClock(second / 5);    //Second
+//	  HAL_Delay(1000);
+//
+//	  //Update
+//	        second++;
+//	        if (second >= 60) {
+//	            second = 0;
+//	            minute++;
+//	        }
+//	        if (minute >= 60) {
+//	            minute = 0;
+//	            hour++;
+//	        }
+//	        if (hour >= 12) {
+//	            hour = 0;
+//	        }
+//  }
 
-	  //Update
-	        second++;
-	        if (second >= 60) {
-	            second = 0;
-	            minute++;
-	        }
-	        if (minute >= 60) {
-	            minute = 0;
-	            hour++;
-	        }
-	        if (hour >= 12) {
-	            hour = 0;
-	        }
-  }
 
 
 
-  /*//Init state: all off
-  	for (int i = 0; i < 12; i++) {
-  	      HAL_GPIO_WritePin(GPIOA, clockPins[i], GPIO_PIN_SET);
-  	  }
   while (1)
   {
 	  for (int i = 0; i < 12; i++) {
 	            // Turn on led i
 	            HAL_GPIO_WritePin(GPIOA, clockPins[i], GPIO_PIN_RESET);
 	            HAL_Delay(500);
-	            HAL_GPIO_WritePin(GPIOA, clockPins[i], GPIO_PIN_SET);
+
   }
-}*/
+	  	for (int i = 0; i < 12; i++) {
+	  	      HAL_GPIO_WritePin(GPIOA, clockPins[i], GPIO_PIN_SET);
+	 	  }
+}
 }
 
 void SystemClock_Config(void)
@@ -123,7 +123,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, pin1_Pin|pin2_Pin|pin3_Pin|pin4_Pin
                           |pin5_Pin|pin6_Pin|pin7_Pin|pin8_Pin
-                          |pin9_Pin|pin10_Pin|pin11_Pin|pin12_Pin, GPIO_PIN_RESET);
+                          |pin9_Pin|pin10_Pin|pin11_Pin|pin12_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pins : pin1_Pin pin2_Pin pin3_Pin pin4_Pin
                            pin5_Pin pin6_Pin pin7_Pin pin8_Pin
