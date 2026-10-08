@@ -200,6 +200,7 @@ int main(void)
   setTimer1(250);
   setTimerMatrix(10);
   setTimerScroll(100);
+  updateClockBuffer();
   while (1)
   {
 	  // Clock + Dot = 1000ms

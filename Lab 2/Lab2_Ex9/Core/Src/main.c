@@ -173,6 +173,7 @@ int main(void)
   setTimer0(1000);
   setTimer1(250);
   setTimerMatrix(10);
+  updateClockBuffer();
   while (1)
   {
 	  // Clock + Dot = 1000ms
