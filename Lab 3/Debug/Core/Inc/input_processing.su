@@ -1,0 +1,3 @@
+input_processing.c:46:12:check_button_action	16	static
+input_processing.c:78:13:auto_balance_time	16	static
+input_processing.c:107:6:fsm_for_input_processing	16	static
