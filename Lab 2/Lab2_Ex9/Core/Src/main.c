@@ -43,38 +43,37 @@ void updateClockBuffer() {
     led_buffer[3] = minute % 10;
 }
 
-void update7SEG (int index) {
-    HAL_GPIO_WritePin(GPIOA, EN0_Pin|EN1_Pin|EN2_Pin|EN3_Pin, GPIO_PIN_SET);
+	void update7SEG (int index) {
+	    // 1. Tắt tất cả các chân EN trước khi chuyển số (Xuất mức 0 / RESET)
+	    HAL_GPIO_WritePin(GPIOA, EN0_Pin|EN1_Pin|EN2_Pin|EN3_Pin, GPIO_PIN_RESET);
 
-    switch (index) {
-        case 0:
-            // 1st buffer
-            display7SEG(led_buffer[0]);
-            HAL_GPIO_WritePin(GPIOA, EN0_Pin, GPIO_PIN_RESET);
-            break;
-        case 1:
-            // 2nd buffer
-            display7SEG(led_buffer[1]);
-            HAL_GPIO_WritePin(GPIOA, EN1_Pin, GPIO_PIN_RESET);
-            break;
-        case 2:
-            // 3rd
-            display7SEG(led_buffer[2]);
-            HAL_GPIO_WritePin(GPIOA, EN2_Pin, GPIO_PIN_RESET);
-            break;
-        case 3:
-            // 4th
-            display7SEG(led_buffer[3]);
-            HAL_GPIO_WritePin(GPIOA, EN3_Pin, GPIO_PIN_RESET);
-            break;
-        default:
-            break;
-    }
-}
+	    // 2. Chống lem chữ (Tắt toàn bộ 7 segment - Anode chung tắt bằng mức 1 / SET)
+	    HAL_GPIO_WritePin(GPIOB, SEG0_Pin|SEG1_Pin|SEG2_Pin|SEG3_Pin|SEG4_Pin|SEG5_Pin|SEG6_Pin, GPIO_PIN_SET);
 
+	    // 3. Xuất dữ liệu ra các chân Segment
+	    display7SEG(led_buffer[index]);
+
+	    // 4. Bật chân EN tương ứng (Xuất mức 1 / SET để chân EN chuyển sang màu Đỏ)
+	    switch (index) {
+	        case 0:
+	            HAL_GPIO_WritePin(GPIOA, EN0_Pin, GPIO_PIN_SET);
+	            break;
+	        case 1:
+	            HAL_GPIO_WritePin(GPIOA, EN1_Pin, GPIO_PIN_SET);
+	            break;
+	        case 2:
+	            HAL_GPIO_WritePin(GPIOA, EN2_Pin, GPIO_PIN_SET);
+	            break;
+	        case 3:
+	            HAL_GPIO_WritePin(GPIOA, EN3_Pin, GPIO_PIN_SET);
+	            break;
+	        default:
+	            break;
+	    }
+	}
 
 //////////////////Timer
-int TIMER_CYCLE = 10; // t= 10ms
+int TIMER_CYCLE = 1; // t= 10ms
 
 // DOT timer = 1000ms
 int timer0_counter = 0;
@@ -169,52 +168,46 @@ int main(void)
   SystemClock_Config();
   MX_GPIO_Init();
   MX_TIM2_Init();
-  HAL_TIM_Base_Start_IT (& htim2 ) ;
-  setTimer0(1000);
-  setTimer1(250);
+  HAL_TIM_Base_Start_IT(&htim2);
+
+  setTimer0(1000); // 1000ms cho đồng hồ đếm
+  setTimer1(5);    // Quét LED mỗi 5ms để mượt mà (không để 250ms ở lúc khởi tạo)
   setTimerMatrix(10);
   updateClockBuffer();
+
   while (1)
   {
-	  // Clock + Dot = 1000ms
-	      if (timer0_flag == 1) {
-	          setTimer0(1000);
+      // Clock + Dot = 1000ms
+      if (timer0_flag == 1) {
+          setTimer0(1000);
 
-	          HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
-	          second++;
-	          if (second >= 60){
-	              second = 0;
-	              minute++;
-	              if (minute >= 60) {
-	                  minute = 0;
-	                  hour++;
-	              }
-	          }
-	          if (hour >= 24) hour = 0;
+          HAL_GPIO_TogglePin(GPIOA, DOT_Pin);
+          second++;
+          if (second >= 60){
+              second = 0;
+              minute++;
+              if (minute >= 60) {
+                  minute = 0;
+                  hour++;
+              }
+          }
+          if (hour >= 24) hour = 0;
 
-	          updateClockBuffer();
-	      }
+          updateClockBuffer();
+      }
 
-	      //Led = 250ms
-	      if (timer1_flag == 1) {
-	          setTimer1(250);
-	          update7SEG(index_led);
-	          index_led++;
-	          if (index_led >= 4) {
-	              index_led = 0;
-	          }
-	      }
+      // Quét LED 7 đoạn mượt mà
+      if (timer1_flag == 1) {
+          setTimer1(5); // Cập nhật lại Timer quét LED (5ms một lần)
+          update7SEG(index_led);
+          index_led++;
+          if (index_led >= MAX_LED) {
+              index_led = 0;
+          }
+      }
 
-	      //Matrix
-	      if (timer_matrix_flag == 1) {
-	                setTimerMatrix(10);
-	                updateLEDMatrix(index_led_matrix);
-	                index_led_matrix++;
-	                if (index_led_matrix >= MAX_LED_MATRIX) {
-	                    index_led_matrix = 0;
-	                }
-	            }
-}
+      // XOÁ DÒNG HAL_Delay(10); Ở ĐÂY ĐỂ TRÁNH BỊ BLOCK CHƯƠNG TRÌNH!
+  }
 }
 
 
@@ -271,7 +264,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 7999;
+  htim2.Init.Prescaler = 799;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 9;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;

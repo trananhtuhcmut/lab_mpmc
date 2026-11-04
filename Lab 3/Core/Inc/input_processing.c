@@ -58,7 +58,7 @@ static int check_button_action(int index) {
                 return 1;
             } else if (is_button_pressed_1s(index)) {
                 buttonState[index] = BUTTON_PRESSED_MORE_THAN_1_SECOND;
-                return 5;
+                return 2;
             }
             break;
 
@@ -67,7 +67,7 @@ static int check_button_action(int index) {
                 buttonState[index] = BUTTON_RELEASED;
                 return 0;
             } else if (is_button_pressed_1s(index)) {
-                return 5;
+                return 2;
             }
             break;
     }
@@ -112,8 +112,13 @@ void fsm_for_input_processing(void) {
         if (index_led >= 4) index_led = 0;
     }
 
-    // Mode
-    if (check_button_action(0) > 0) {
+
+    int action0 = check_button_action(0); //  1 (Mode / -1)
+    int action1 = check_button_action(1); //  2 (+1 / + 5)
+    int action2 = check_button_action(2); //  3 (Set / - 5)
+
+    // Mode change
+    if (action0 == 1) {
         clearAllTrafficLights();
         setTimerBlink(250);
         if (current_mode == MODE_1_NORMAL) {
@@ -135,65 +140,50 @@ void fsm_for_input_processing(void) {
     }
 
 
-    int add_val = 0;
-    switch (current_mode) {
-        case MODE_1_NORMAL:
-            check_button_action(1);
-            check_button_action(2);
-            fsm_automatic_run();
-            break;
+    if (current_mode == MODE_1_NORMAL) {
+        fsm_automatic_run();
+    }
+    else {
+        // Mode 2, 3, 4
 
-        case MODE_2_RED:
-            if (timer_blink_flag == 1) {
-                setTimerBlink(250);
-                toggleAllRedLEDs();
+        // 1. 2Hz
+        if (timer_blink_flag == 1) {
+            setTimerBlink(250);
+            if (current_mode == MODE_2_RED) toggleAllRedLEDs();
+            else if (current_mode == MODE_3_YELLOW) toggleAllYellowLEDs();
+            else if (current_mode == MODE_4_GREEN) toggleAllGreenLEDs();
+        }
+
+        // 2. Add/Sub second
+        int delta = 0;
+        if (action0 == 2) delta = -1;       // 1 Hold: - 1
+        else if (action1 == 1) delta = 1;   // 2 lick + 1
+        else if (action1 == 2) delta = 5;   // 2 Hold: + 5
+        else if (action2 == 2) delta = -5;  // 3 Hold: - 5
+
+        // 3. Wrap-around 1 <-> 99
+        if (delta != 0) {
+            temp_value += delta;
+            if (temp_value > 99) {
+                temp_value -= 99;
+            } else if (temp_value < 1) {
+                temp_value += 99;
             }
-            // Nút 1: Tăng thời gian
-            add_val = check_button_action(1);
-            if (add_val > 0) {
-                temp_value += add_val;
-                if (temp_value > 99) temp_value = 1;
-                update7SegBuffer(temp_value, MODE_2_RED);
-            }
-            // Nút 2: Lưu
-            if (check_button_action(2) > 0) {
+            update7SegBuffer(temp_value, current_mode);
+        }
+
+        // 4. Button 3
+        if (action2 == 1) {
+            if (current_mode == MODE_2_RED) {
                 red_time = temp_value;
                 auto_balance_time(MODE_2_RED);
-            }
-            break;
-
-        case MODE_3_YELLOW:
-            if (timer_blink_flag == 1) {
-                setTimerBlink(250);
-                toggleAllYellowLEDs();
-            }
-            add_val = check_button_action(1);
-            if (add_val > 0) {
-                temp_value += add_val;
-                if (temp_value > 99) temp_value = 1;
-                update7SegBuffer(temp_value, MODE_3_YELLOW);
-            }
-            if (check_button_action(2) > 0) {
+            } else if (current_mode == MODE_3_YELLOW) {
                 yellow_time = temp_value;
                 auto_balance_time(MODE_3_YELLOW);
-            }
-            break;
-
-        case MODE_4_GREEN:
-            if (timer_blink_flag == 1) {
-                setTimerBlink(250);
-                toggleAllGreenLEDs();
-            }
-            add_val = check_button_action(1);
-            if (add_val > 0) {
-                temp_value += add_val;
-                if (temp_value > 99) temp_value = 1;
-                update7SegBuffer(temp_value, MODE_4_GREEN);
-            }
-            if (check_button_action(2) > 0) {
+            } else if (current_mode == MODE_4_GREEN) {
                 green_time = temp_value;
                 auto_balance_time(MODE_4_GREEN);
             }
-            break;
+        }
     }
 }

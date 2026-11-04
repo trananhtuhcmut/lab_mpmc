@@ -8,7 +8,7 @@ int timer_traffic_flag = 0;
 int timer_second_counter = 1000 / TIMER_CYCLE;
 int timer_second_flag = 0;
 
-int timer_7seg_counter = 1000 / TIMER_CYCLE;
+int timer_7seg_counter;
 int timer_7seg_flag = 1;
 
 int timer_blink_counter = 250 / TIMER_CYCLE;
