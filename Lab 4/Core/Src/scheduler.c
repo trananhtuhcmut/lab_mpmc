@@ -99,7 +99,7 @@ void SCH_Update(void) {
 
         // Count down, start run
         if (SCH_tasks_G[0].Delay == 0) {
-            SCH_tasks_G[0].RunMe += 1;
+            SCH_tasks_G[0].RunMe = 1;
         }
     }
 }

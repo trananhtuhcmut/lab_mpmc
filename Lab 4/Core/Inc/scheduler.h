@@ -8,12 +8,13 @@
 #define INC_SCHEDULER_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct {
     void (*pTask)(void);      // Pointer function
     uint32_t Delay;           // Delta delay
     uint32_t Period;          // 0 mean once only
-    uint8_t RunMe;            // Flag
+    bool RunMe;            // Flag
     uint32_t TaskID;          // Task ID
 } sTask;
 
